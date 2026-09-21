@@ -1,0 +1,87 @@
+# Blueprint de despliegue para Render.com
+# Sintaxis de envVarGroups confirmada contra la documentacion oficial de Render
+# (render.com/docs/blueprint-spec) antes de escribir esto.
+
+envVarGroups:
+  - name: endimaster-secrets
+    envVars:
+      # generado UNA vez y compartido por los dos servicios de abajo via
+      # "fromGroup" -- asi el backend y el cron SIEMPRE usan la misma llave
+      # para cifrar/descifrar los tokens de QuickBooks y Siigo. Si cada uno
+      # tuviera su propia llave generada por separado, el cron no podria
+      # leer los tokens que el backend guardo, y la sincronizacion fallaria
+      # en silencio.
+      - key: TOKEN_ENCRYPTION_KEY
+        generateValue: true
+      - key: QBO_ENVIRONMENT
+        value: "sandbox"
+      - key: QBO_CLIENT_ID
+        sync: false
+      - key: QBO_CLIENT_SECRET
+        sync: false
+      - key: SIIGO_PARTNER_ID
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+databases:
+  - name: endimaster-db
+    plan: free
+    databaseName: endimaster
+    user: endimaster
+
+services:
+  - type: web
+    name: endimaster-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - fromGroup: endimaster-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: endimaster-db
+          property: connectionString
+      - key: PGSSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: "8h"
+      - key: QBO_REDIRECT_URI
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # Cron Job NATIVO de Render: a diferencia del node-cron interno que ya
+  # trae syncWorker.js (que depende de que el web service este despierto),
+  # Render invoca este comando el mismo desde afuera segun el horario
+  # definido, sin importar si el backend esta dormido -- resuelve el
+  # problema real de que el plan gratis "duerme" tras 15 min sin trafico.
+  # Corre "sync:once" (una sola pasada y termina) en vez de "sync:cron"
+  # (que se quedaria esperando para siempre -- un Cron Job de Render debe
+  # TERMINAR en cada ejecucion, no quedarse corriendo).
+  - type: cron
+    name: endimaster-sync
+    runtime: node
+    plan: free
+    rootDir: backend
+    schedule: "0 * * * *"   # cada hora, en el minuto 0
+    buildCommand: npm install
+    startCommand: npm run sync:once
+    envVars:
+      - fromGroup: endimaster-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: endimaster-db
+          property: connectionString
+      - key: PGSSL
+        value: "true"

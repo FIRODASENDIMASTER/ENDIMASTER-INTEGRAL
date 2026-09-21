@@ -1,0 +1,40 @@
+====================================================
+  ENDIMASTER — Guía rápida (Windows)
+====================================================
+
+REQUISITO (solo una vez, si no los tienes):
+  1. Instala Node.js:      https://nodejs.org       (elige la version "LTS")
+  2. Instala PostgreSQL:   https://www.postgresql.org/download/windows/
+     -> Durante la instalacion te pedira una contrasena para el usuario
+        "postgres". ANOTALA, la vas a necesitar en el siguiente paso.
+     -> Deja marcada la opcion de agregar PostgreSQL al PATH si te la ofrece.
+
+CONFIGURACION (solo una vez):
+  3. Entra a la carpeta "backend".
+  4. Haz DOBLE CLIC en "setup.bat".
+     -> Te va a pedir la contrasena de postgres que anotaste arriba.
+     -> Esto crea la base de datos y deja todo listo. Puede tardar unos minutos.
+
+USO DIARIO (cada vez que quieras usar ENDIMASTER):
+  5. Entra a la carpeta "backend" y haz DOBLE CLIC en "start-backend.bat".
+     -> Deja esa ventana negra abierta.
+  6. Entra a la carpeta "frontend" y haz DOBLE CLIC en "start-frontend.bat".
+     -> Se va a abrir el navegador solo, con ENDIMASTER cargado.
+  7. En la pantalla de login, haz clic en "Crea tu cuenta de empresa",
+     llena tus datos, y ya puedes entrar. El primer usuario que se registra
+     y crea una empresa queda automaticamente como CEO de esa empresa.
+
+PARA CERRAR:
+  Simplemente cierra las dos ventanas negras (backend y frontend).
+
+SI ALGO FALLA:
+  - "no se reconoce el comando 'node'"      -> Node.js no quedo instalado o no
+                                                reiniciaste la ventana de cmd.
+  - "no se reconoce el comando 'psql'"      -> PostgreSQL no quedo en el PATH;
+                                                reinstala marcando esa opcion.
+  - El login dice "no se pudo conectar"     -> Revisa que la ventana de
+                                                start-backend.bat siga abierta
+                                                y sin errores en rojo.
+  - Se te olvido la contrasena de postgres  -> Puedes reinstalar PostgreSQL o
+                                                cambiarla desde pgAdmin (viene
+                                                incluido con la instalacion).
